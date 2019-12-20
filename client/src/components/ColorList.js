@@ -60,6 +60,17 @@ const ColorList = ({ colors, updateColors }) => {
       .catch (error => console.log('delete error', error))
   };
 
+  const deleteColor = color => {
+
+    axiosWithAuth()
+    .delete(`http://localhost:5000/api/colors/${color.id}`)
+    .then( res => 
+      updateColors(colors.filter(color => {
+        return color.id !== res.data
+      })))
+      .catch (error => console.log('delete error', error))
+  };
+
 
 const handleAddColor = e => {
   e.preventDefault();
