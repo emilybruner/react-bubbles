@@ -11,14 +11,22 @@ const ColorList = ({ colors, updateColors }) => {
   console.log(colors);
   const [editing, setEditing] = useState(false);
   const [colorToEdit, setColorToEdit] = useState(initialColor);
-  const [newColor, setNewColor] = useState({
-    color: '',
-    code: {hex: ''},
-  })
+  const [addColor, setAddColor] = useState(initialColor);
 
   const editColor = color => {
     setEditing(true);
     setColorToEdit(color);
+  };
+
+  const newColors = () => {
+    axiosWithAuth()
+      .get("colors")
+      .then(res => {
+        updateColors(res.data);
+      })
+      .catch(err => {
+        console.log("Error: ", err);
+      });
   };
 
   const saveEdit = e => {
@@ -53,12 +61,21 @@ const ColorList = ({ colors, updateColors }) => {
   };
 
 
-const addColor = e => {
+const handleAddColor = e => {
+  e.preventDefault();
+  const newColor = {
+    ...addColor, 
+    id: Date.now()
+  };
   axiosWithAuth()
-  .post(`/api/colors`, newColor)
-  .then(res => updateColors ([...colors, newColor]))
-  .catch(error => console.log(error))
- 
+  .post("colors", newColor)
+  .then(res => {
+    newColors();
+    setAddColor(initialColor)
+  })
+  .catch(err => {
+    console.log('error: ', err)
+  });
 }
 
   return (
@@ -115,14 +132,14 @@ const addColor = e => {
         </form>
       )}
       <div className="spacer" />
-      <form onSubmit={addColor}>
+      <form onSubmit={handleAddColor}>
         <input
           type='text'
           name='color'
-          value={newColor.color}
+          value={addColor.color}
           onChange={(e) => {
-            setNewColor({
-              ...newColor,
+            setAddColor({
+              ...addColor,
               color: e.target.value
             })
           }}
@@ -133,9 +150,9 @@ const addColor = e => {
           <input
             type='text'
             name='color'
-            value={newColor.code.hex}
+            value={addColor.code.hex}
             onChange={(e) => {
-              setNewColor({...newColor, code: {hex: e.target.value}})}}
+              setAddColor({...addColor, code: {hex: e.target.value}})}}
             placeholder='hex code'
             />
             <button type='submit'>Add Color</button>
